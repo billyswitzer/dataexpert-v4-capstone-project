@@ -1,0 +1,8 @@
+project:
+    name: dataexpert-airflow-dbt
+skip_parse: false
+verbosity: debug
+webserver:
+    port: "8081"
+postgres:
+    port: "5431"
