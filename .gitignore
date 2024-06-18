@@ -29,6 +29,7 @@ dbt_project/dbt_packages/
 dbt_project/*venv/
 dbt_project/dbt.env
 package-lock.yml
+dbt_project
 
 ## project specific files
 include/test.txt
@@ -38,3 +39,9 @@ include/test.txt
 
 #Old/archived files
 jobs/local/old_scripts
+
+#Unused DAG files
+dags/checks
+dags/community
+dags/dbt
+dags/pyspark
