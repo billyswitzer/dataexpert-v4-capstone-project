@@ -66,8 +66,6 @@ def main():
     spark.sql(query)
 
 
-    as_of_date = date.today()
-    
     bar_schema = StructType([
         StructField("symbol", StringType(), True),
         StructField("price_array", ArrayType(
@@ -95,8 +93,6 @@ def main():
         StructField("v", LongType(), True),
         StructField("vw", DoubleType(), True)
     ])
-
-    flattened_df = spark.createDataFrame(data=[], schema=flat_schema)
 
     asset_json = get_assets()
 
@@ -126,6 +122,8 @@ def main():
         #Always run the loop the first time
         status_code = 200
         next_page_token = 'Initial'
+
+        flattened_df = spark.createDataFrame(data=[], schema=flat_schema)
         
         while status_code == 200 and next_page_token is not None:
 
@@ -185,7 +183,7 @@ def main():
                 col("vw").alias("volume_weighted_average_price")
             )            
         
-        output_df = converted_df.withColumn('as_of_date', lit(as_of_date))
+        output_df = converted_df.withColumn('as_of_date', lit(yesterday))
 
         output_df.select(
             col("symbol"),
