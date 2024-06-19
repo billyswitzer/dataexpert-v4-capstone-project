@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession, Row
 from pyspark.sql.functions import col, lit, explode, to_date, to_timestamp
 from pyspark.sql.types import StringType, StructType, StructField, DoubleType, LongType, ArrayType
 import requests
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 import sys
 from awsglue.utils import getResolvedOptions
 from awsglue.context import GlueContext
@@ -94,7 +94,8 @@ asset_json = get_assets()
 
 asset_df = spark.createDataFrame(asset_json)
 
-yesterday = date.today() - timedelta(days=1)
+run_datetime = datetime.strptime(run_date, "%Y-%m-%d")
+yesterday = run_datetime.date() - timedelta(days=1)
 
 #Pull a batch of stocks and build the URL below dynamically
 symbol_batch_size = 100
