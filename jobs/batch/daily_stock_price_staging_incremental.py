@@ -95,7 +95,7 @@ asset_json = get_assets()
 asset_df = spark.createDataFrame(asset_json)
 
 run_datetime = datetime.strptime(run_date, "%Y-%m-%d")
-yesterday = run_datetime.date() - timedelta(days=1)
+as_of_date = run_datetime.date() - timedelta(days=1)
 
 #Pull a batch of stocks and build the URL below dynamically
 symbol_batch_size = 100
@@ -108,7 +108,7 @@ for symbol_batch_df in symbol_batches:
 	# #Get batch of stock symbols separated by %2C
 	symbol_string = '%2C'.join(symbol_batch_df.filter(~symbol_batch_df["symbol"].contains("/")).select("symbol").rdd.flatMap(lambda x: x).collect())
 
-	initial_url = f'https://data.alpaca.markets/v2/stocks/bars?symbols={symbol_string}&timeframe=1Day&start={str(yesterday)}&end={str(yesterday)}&limit=1000&adjustment=raw&feed=sip&sort=desc'
+	initial_url = f'https://data.alpaca.markets/v2/stocks/bars?symbols={symbol_string}&timeframe=1Day&start={str(as_of_date)}&end={str(as_of_date)}&limit=1000&adjustment=raw&feed=sip&sort=desc'
 
 	#Always run the loop the first time
 	status_code = 200
@@ -174,7 +174,7 @@ for symbol_batch_df in symbol_batches:
 			col("vw").alias("volume_weighted_average_price")
 		)            
 	
-	output_df = converted_df.withColumn('as_of_date', lit(yesterday))
+	output_df = converted_df.withColumn('as_of_date', lit(as_of_date))
 
 	output_df.select(
 		col("symbol"),
