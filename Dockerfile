@@ -10,3 +10,4 @@ RUN python -m venv dbt_venv && \
     pip install --no-cache-dir -r dbt_project/dbt-requirements.txt && \
     source dbt_project/dbt.env && \
     deactivate
+RUN pip install trino
