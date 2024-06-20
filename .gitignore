@@ -45,3 +45,6 @@ dags/checks
 dags/community
 dags/dbt
 dags/pyspark
+
+#glue_job_runner - used for local testing
+jobs/glue_job_runner.py
