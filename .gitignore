@@ -39,9 +39,17 @@ include/test.txt
 
 #Old/archived files
 jobs/local/old_scripts
+jobs/batch/old_scripts
+jobs/local/test
 
 #Unused DAG files
 dags/checks
 dags/community
 dags/dbt
 dags/pyspark
+
+#glue_job_runner - used for local testing
+jobs/glue_job_runner.py
+
+#Unfinished streaming work
+jobs/streaming

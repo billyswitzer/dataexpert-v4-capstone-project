@@ -57,6 +57,7 @@ def create_glue_job(
     aws_region,
     description='Transform CSV data to Parquet format',
     kafka_credentials=None,
+    polygon_credentials=None,
     **kwargs
 ):
     script_path = upload_to_s3(script_path, s3_bucket, 'jobscripts/' + script_path)
@@ -85,11 +86,16 @@ def create_glue_job(
     extra_jars_list = [
         f"s3://{s3_bucket}/jars/iceberg-spark-runtime-3.3_2.12-1.5.2.jar",
         f"s3://{s3_bucket}/jars/iceberg-aws-bundle-1.5.2.jar",
-        f"s3://{s3_bucket}/jars/spark-sql-kafka-0-10_2.12-3.5.1.jar"
+        f"s3://{s3_bucket}/jars/spark-sql-kafka-0-10_2.12-3.5.1.jar",
+        f"s3://{s3_bucket}/jars/hadoop-aws-3.2.0.jar"
     ]
 
     extra_jars = ','.join(extra_jars_list)
 
+    python_modules_list = [
+        f's3://{s3_bucket}/python-modules/websocket_client-1.8.0.tar.gz'
+    ]
+    python_modules = ','.join(python_modules_list)
     job_args = {
         'Description': description,
         'Role': 'AWSGlueServiceRole',
@@ -103,7 +109,8 @@ def create_glue_job(
         },
         'DefaultArguments': {
             '--conf': spark_string,
-            "--extra-jars": extra_jars
+            "--extra-jars": extra_jars,
+            '--additional-python-modules':python_modules
         },
         'GlueVersion': '4.0',
         'WorkerType': 'Standard',
@@ -141,6 +148,9 @@ def create_glue_job(
     if kafka_credentials is not None:
         arguments['--kafka_credentials'] = kafka_credentials
         arguments['--checkpoint_location'] = f"""s3://{s3_bucket}/kafka-checkpoints/{job_name}"""
+
+    if polygon_credentials is not None:
+        arguments['--polygon_credentials'] = polygon_credentials
 
     run_response = glue_client.start_job_run(JobName=job_name,
                                              Arguments=arguments)
