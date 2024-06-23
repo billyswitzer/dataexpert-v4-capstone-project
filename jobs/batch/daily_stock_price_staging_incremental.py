@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession, Row
 from pyspark.sql.functions import col, lit, explode, to_date, to_timestamp
 from pyspark.sql.types import StringType, StructType, StructField, DoubleType, LongType, ArrayType
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 import sys
 from awsglue.utils import getResolvedOptions
 from awsglue.context import GlueContext
@@ -95,7 +95,7 @@ asset_json = get_assets()
 asset_df = spark.createDataFrame(asset_json)
 
 run_datetime = datetime.strptime(run_date, "%Y-%m-%d")
-as_of_date = run_datetime.date() - timedelta(days=1)
+as_of_date = run_datetime.date()
 
 #Pull a batch of stocks and build the URL below dynamically
 symbol_batch_size = 100
@@ -107,7 +107,7 @@ symbol_batches = asset_df.randomSplit(splits)
 for symbol_batch_df in symbol_batches:
 	# #Get batch of stock symbols separated by %2C
 	symbol_string = '%2C'.join(symbol_batch_df.filter(~symbol_batch_df["symbol"].contains("/")).select("symbol").rdd.flatMap(lambda x: x).collect())
-
+	
 	initial_url = f'https://data.alpaca.markets/v2/stocks/bars?symbols={symbol_string}&timeframe=1Day&start={str(as_of_date)}&end={str(as_of_date)}&limit=1000&adjustment=raw&feed=sip&sort=desc'
 
 	#Always run the loop the first time
