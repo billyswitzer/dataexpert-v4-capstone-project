@@ -1,0 +1,107 @@
+slice_name: Stocks Above Avg Price Last 90 Days (Pct)
+description: null
+certified_by: null
+certification_details: null
+viz_type: table
+params:
+  datasource: 28__table
+  viz_type: table
+  slice_id: 203
+  query_mode: aggregate
+  groupby:
+  - symbol
+  temporal_columns_lookup:
+    last_updated_datetime: true
+  metrics:
+  - aggregate: MAX
+    column:
+      advanced_data_type: null
+      certification_details: null
+      certified_by: null
+      column_name: m_price_change_last_90_days_pct
+      description: null
+      expression: null
+      filterable: true
+      groupby: true
+      id: 800
+      is_certified: false
+      is_dttm: false
+      python_date_format: null
+      type: DOUBLE
+      type_generic: 0
+      verbose_name: null
+      warning_markdown: null
+    datasourceWarning: false
+    expressionType: SIMPLE
+    hasCustomLabel: false
+    label: MAX(m_price_change_last_90_days_pct)
+    optionName: metric_a8d48qyoub_ilep9r7904l
+    sqlExpression: null
+  all_columns: []
+  percent_metrics: []
+  adhoc_filters:
+  - clause: WHERE
+    comparator: No filter
+    datasourceWarning: false
+    expressionType: SIMPLE
+    filterOptionName: filter_fbvn2l95ixv_39mx6kxs4av
+    isExtra: false
+    isNew: false
+    operator: TEMPORAL_RANGE
+    sqlExpression: null
+    subject: last_updated_datetime
+  - clause: WHERE
+    comparator: null
+    datasourceWarning: false
+    expressionType: SIMPLE
+    filterOptionName: filter_wnxu4sxj5z_cik4foxsolv
+    isExtra: false
+    isNew: false
+    operator: IS NOT NULL
+    operatorId: IS_NOT_NULL
+    sqlExpression: null
+    subject: m_price_change_last_90_days_pct
+  timeseries_limit_metric:
+    aggregate: MAX
+    column:
+      advanced_data_type: null
+      certification_details: null
+      certified_by: null
+      column_name: m_price_change_last_90_days_pct
+      description: null
+      expression: null
+      filterable: true
+      groupby: true
+      id: 800
+      is_certified: false
+      is_dttm: false
+      python_date_format: null
+      type: DOUBLE
+      type_generic: 0
+      verbose_name: null
+      warning_markdown: null
+    datasourceWarning: false
+    expressionType: SIMPLE
+    hasCustomLabel: false
+    label: MAX(m_price_change_last_90_days_pct)
+    optionName: metric_zsmi2wxjmnj_spm2cef0wwb
+    sqlExpression: null
+  order_by_cols: []
+  row_limit: 50
+  server_page_length: 10
+  order_desc: true
+  table_timestamp_format: smart_date
+  show_cell_bars: true
+  color_pn: true
+  allow_render_html: true
+  extra_form_data: {}
+  dashboards:
+  - 13
+query_context: '{"datasource":{"id":28,"type":"table"},"force":false,"queries":[{"filters":[{"col":"last_updated_datetime","op":"TEMPORAL_RANGE","val":"No
+  filter"},{"col":"m_price_change_last_90_days_pct","op":"IS NOT NULL"}],"extras":{"having":"","where":""},"applied_time_extras":{},"columns":["symbol"],"metrics":[{"aggregate":"MAX","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"m_price_change_last_90_days_pct","description":null,"expression":null,"filterable":true,"groupby":true,"id":800,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"DOUBLE","type_generic":0,"verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"MAX(m_price_change_last_90_days_pct)","optionName":"metric_a8d48qyoub_ilep9r7904l","sqlExpression":null}],"orderby":[[{"aggregate":"MAX","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"m_price_change_last_90_days_pct","description":null,"expression":null,"filterable":true,"groupby":true,"id":800,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"DOUBLE","type_generic":0,"verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"MAX(m_price_change_last_90_days_pct)","optionName":"metric_zsmi2wxjmnj_spm2cef0wwb","sqlExpression":null},false]],"annotation_layers":[],"row_limit":50,"series_limit":0,"series_limit_metric":{"aggregate":"MAX","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"m_price_change_last_90_days_pct","description":null,"expression":null,"filterable":true,"groupby":true,"id":800,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"DOUBLE","type_generic":0,"verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"MAX(m_price_change_last_90_days_pct)","optionName":"metric_zsmi2wxjmnj_spm2cef0wwb","sqlExpression":null},"order_desc":true,"url_params":{},"custom_params":{},"custom_form_data":{},"post_processing":[]}],"form_data":{"datasource":"28__table","viz_type":"table","slice_id":203,"query_mode":"aggregate","groupby":["symbol"],"temporal_columns_lookup":{"last_updated_datetime":true},"metrics":[{"aggregate":"MAX","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"m_price_change_last_90_days_pct","description":null,"expression":null,"filterable":true,"groupby":true,"id":800,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"DOUBLE","type_generic":0,"verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"MAX(m_price_change_last_90_days_pct)","optionName":"metric_a8d48qyoub_ilep9r7904l","sqlExpression":null}],"all_columns":[],"percent_metrics":[],"adhoc_filters":[{"clause":"WHERE","comparator":"No
+  filter","datasourceWarning":false,"expressionType":"SIMPLE","filterOptionName":"filter_fbvn2l95ixv_39mx6kxs4av","isExtra":false,"isNew":false,"operator":"TEMPORAL_RANGE","sqlExpression":null,"subject":"last_updated_datetime"},{"clause":"WHERE","comparator":null,"datasourceWarning":false,"expressionType":"SIMPLE","filterOptionName":"filter_wnxu4sxj5z_cik4foxsolv","isExtra":false,"isNew":false,"operator":"IS
+  NOT NULL","operatorId":"IS_NOT_NULL","sqlExpression":null,"subject":"m_price_change_last_90_days_pct"}],"timeseries_limit_metric":{"aggregate":"MAX","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"m_price_change_last_90_days_pct","description":null,"expression":null,"filterable":true,"groupby":true,"id":800,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"DOUBLE","type_generic":0,"verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"MAX(m_price_change_last_90_days_pct)","optionName":"metric_zsmi2wxjmnj_spm2cef0wwb","sqlExpression":null},"order_by_cols":[],"row_limit":50,"server_page_length":10,"order_desc":true,"table_timestamp_format":"smart_date","show_cell_bars":true,"color_pn":true,"allow_render_html":true,"extra_form_data":{},"dashboards":[13],"force":false,"result_format":"json","result_type":"full"},"result_format":"json","result_type":"full"}'
+cache_timeout: null
+uuid: e9a31e6a-a1e8-4a2f-b76f-fbeb5677e642
+version: 1.0.0
+dataset_uuid: f723a456-5171-44fb-8a22-bc01be7f365a

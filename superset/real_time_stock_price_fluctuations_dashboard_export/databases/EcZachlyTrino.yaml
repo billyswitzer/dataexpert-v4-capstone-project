@@ -1,0 +1,13 @@
+database_name: EcZachlyTrino
+sqlalchemy_uri: trino://support%40eczachly.com%2Fstudent:XXXXXXXXXX@dataengineer-eczachly.trino.galaxy.starburst.io:8443/academy
+cache_timeout: null
+expose_in_sqllab: true
+allow_run_async: false
+allow_ctas: false
+allow_cvas: false
+allow_dml: false
+allow_file_upload: false
+extra:
+  allows_virtual_table_explore: true
+uuid: cd18e150-c549-4c33-8515-2c56ecf12983
+version: 1.0.0
