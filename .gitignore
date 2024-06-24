@@ -41,6 +41,8 @@ include/test.txt
 jobs/local/old_scripts
 jobs/batch/old_scripts
 jobs/local/test
+old_dags
+sql/iceberg/old_scripts
 
 #Unused DAG files
 dags/checks
