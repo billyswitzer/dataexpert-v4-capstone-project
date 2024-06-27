@@ -52,6 +52,7 @@ dags/pyspark
 
 #glue_job_runner - used for local testing
 jobs/glue_job_runner.py
+jobs/glue_job_runner_2.py
 
 #Unfinished streaming work
 jobs/streaming

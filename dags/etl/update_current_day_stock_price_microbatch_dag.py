@@ -11,8 +11,6 @@ catalog_name = Variable.get("CATALOG_NAME")
 aws_region = Variable.get("AWS_GLUE_REGION")
 aws_access_key_id = Variable.get("DATAEXPERT_AWS_ACCESS_KEY_ID")
 aws_secret_access_key = Variable.get("DATAEXPERT_AWS_SECRET_ACCESS_KEY")
-initial_load_to_current_day_stock_price = "jobs/batch/load_dim_daily_stock_price_to_current_day_stock_price.py"
-update_current_day_stock_price_microbatch_script = "jobs/batch/update_current_day_stock_price_microbatch.py"
 
 # #Alpaca keys
 apca_api_key_id = Variable.get("APCA_API_KEY_ID")
@@ -36,6 +34,9 @@ apca_api_secret_key = Variable.get("APCA_API_SECRET_KEY")
 def update_current_day_stock_price_microbatch_dag():
     source_table = "billyswitzer.dim_daily_stock_price"
     target_table = "billyswitzer.current_day_stock_price"
+        
+    initial_load_to_current_day_stock_price = "jobs/batch/load_dim_daily_stock_price_to_current_day_stock_price.py"
+    update_current_day_stock_price_microbatch_script = "jobs/batch/update_current_day_stock_price_microbatch.py"
 
     load_dim_daily_stock_price_to_current_day_stock_price = PythonOperator(
         task_id="load_dim_daily_stock_price_to_current_day_stock_price",

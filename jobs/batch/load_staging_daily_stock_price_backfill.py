@@ -1,10 +1,12 @@
 import sys
+import ast
 from awsglue.utils import getResolvedOptions
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_unixtime, lit, col
-from datetime import datetime
+from pyspark.sql.functions import from_unixtime, lit, col, udf, concat, from_json
+from dateutil.relativedelta import relativedelta
+from datetime import date
 
 
 args = getResolvedOptions(sys.argv, ["JOB_NAME", "ds", 'output_table', 'polygon_access_key_id', 'polygon_api_key'])
@@ -24,11 +26,17 @@ spark = glueContext.spark_session
 
 # Define the S3 bucket and access configuration
 s3_bucket = "s3a://flatfiles"
+
 spark._jsc.hadoopConfiguration().set("fs.s3a.access.key", polygon_access_key_id)
 spark._jsc.hadoopConfiguration().set("fs.s3a.secret.key", polygon_api_key)
 spark._jsc.hadoopConfiguration().set("fs.s3a.endpoint", "https://files.polygon.io/")
 spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
 spark._jsc.hadoopConfiguration().set("fs.s3a.path.style.access", "true")
+
+iter_date = date(2024,6,1)
+end_date = date(2023,6,1)
+
+
 
 spark.sql(f"""
 CREATE OR REPLACE TABLE {output_table} (
@@ -46,14 +54,12 @@ USING iceberg
 PARTITIONED BY (snapshot_date)
 """)
 
-run_date_obj = datetime.strptime(run_date, '%Y-%m-%d')
+while iter_date >= end_date:
 
-if run_date_obj.weekday() < 5:
-    
-    year = str(run_date).split('-')[0]
-    month = str(run_date).split('-')[1]    
+    year = str(iter_date).split('-')[0]
+    month = str(iter_date).split('-')[1]    
 
-    file_path = f"{s3_bucket}/us_stocks_sip/day_aggs_v1/{year}/{month}/{run_date}.csv.gz"
+    file_path = f"{s3_bucket}/us_stocks_sip/day_aggs_v1/{year}/{month}/"
     df = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load(file_path)
 
     # Write the DataFrame to the Iceberg table
@@ -61,6 +67,9 @@ if run_date_obj.weekday() < 5:
         .sortWithinPartitions("ticker").writeTo(output_table) \
         .tableProperty("write.spark.fanout.enabled", "true") \
         .overwritePartitions()
+    
+
+    iter_date -= relativedelta(months=1)
 
 job = Job(glueContext)
 job.init(args["JOB_NAME"], args)

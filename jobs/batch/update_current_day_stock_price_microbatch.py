@@ -45,7 +45,7 @@ def cast_integer_value_to_float(value):
     return value
 
 bar_schema = StructType([
-	StructField("symbol", StringType(), True),
+	StructField("ticker", StringType(), True),
 	StructField("price_struct",
 		StructType([
 			StructField("c", DoubleType(), True),
@@ -61,7 +61,7 @@ bar_schema = StructType([
 ])
 
 flat_schema = StructType([
-	StructField("symbol", StringType(), True),
+	StructField("ticker", StringType(), True),
 	StructField("c", DoubleType(), True),
 	StructField("t", StringType(), True),
 ])
@@ -71,7 +71,7 @@ asset_json = get_assets()
 asset_df = spark.createDataFrame(asset_json)
 
 current_data_df = spark.sql(f"""
-	SELECT symbol,
+	SELECT ticker,
 		close_price_last_day,
 		close_price_avg_last_90_days,
 		close_price_avg_last_365_days
@@ -119,17 +119,17 @@ while datetime.now() < end_time:
 				next_page_token = None
 
 			#Ensure doubles are not cast as integers
-			for symbol in data["bars"]:
-				entry = data["bars"][symbol]
+			for ticker in data["bars"]:
+				entry = data["bars"][ticker]
 				for key in entry:
 					if key in ['c', 'h', 'l', 'o', 'vw']:
 						entry[key] = cast_integer_value_to_float(entry[key])
 
-			rows = [Row(symbol=symbol, price_array=bars) for symbol, bars in data["bars"].items()]
+			rows = [Row(ticker=ticker, price_array=bars) for ticker, bars in data["bars"].items()]
 			raw_df = spark.createDataFrame(rows, bar_schema)
 
 			flattened_df = flattened_df.union(raw_df.select(
-					col("symbol"),
+					col("ticker"),
 					col("price_struct.c").alias("c"),
 					col("price_struct.t").alias("t")
 				)
@@ -138,12 +138,12 @@ while datetime.now() < end_time:
 
 		converted_df = flattened_df.filter(col("c") > 0).withColumn("timestamp", to_timestamp(col("t"), "yyyy-MM-dd'T'HH:mm:ssX")) \
 			.select(
-				col("symbol"),
+				col("ticker"),
 				col("c").alias("current_price"),
 				col("timestamp").alias("last_updated_datetime")
 			)
 		
-		update_df = converted_df.join(current_data_df, converted_df.symbol == current_data_df.symbol) \
+		update_df = converted_df.join(current_data_df, converted_df.ticker == current_data_df.ticker) \
 			.withColumn("m_price_change_last_day", round(col("current_price") - col("close_price_last_day"),2)) \
 			.withColumn(
 				"m_price_change_last_day_pct",
@@ -175,7 +175,7 @@ while datetime.now() < end_time:
 				)
 			) \
 			.select(
-				converted_df.symbol,
+				converted_df.ticker,
 				col("current_price"),
 				col("last_updated_datetime"),
 				col("m_price_change_last_day"),
@@ -191,7 +191,7 @@ while datetime.now() < end_time:
 		spark.sql(f"""
 			MERGE INTO {output_table} AS target
 			USING stock_microbatch_update AS source
-				ON source.symbol = target.symbol
+				ON source.ticker = target.ticker
 			WHEN MATCHED THEN
 				UPDATE SET current_price = source.current_price,
 					last_updated_datetime = source.last_updated_datetime,
