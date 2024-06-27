@@ -21,7 +21,7 @@ spark = glueContext.spark_session
 run_datetime = datetime.strptime(run_date, "%Y-%m-%d")
 as_of_date = run_datetime.date()
 
-dim_daily_stock_price_df = spark.sql(f"""SELECT symbol,
+dim_daily_stock_price_df = spark.sql(f"""SELECT ticker,
 		close_price_last_day,
 		close_price_avg_last_90_days,
 		close_price_avg_last_365_days,
