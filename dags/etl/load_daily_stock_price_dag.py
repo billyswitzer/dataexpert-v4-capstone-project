@@ -12,10 +12,6 @@ aws_region = Variable.get("AWS_GLUE_REGION")
 aws_access_key_id = Variable.get("DATAEXPERT_AWS_ACCESS_KEY_ID")
 aws_secret_access_key = Variable.get("DATAEXPERT_AWS_SECRET_ACCESS_KEY")
 
-# # #Alpaca keys
-# apca_api_key_id = Variable.get("APCA_API_KEY_ID")
-# apca_api_secret_key = Variable.get("APCA_API_SECRET_KEY")
-
 #Polygon key
 polygon_api_key = Variable.get("POLYGON_API_KEY")
 polygon_access_key_id = Variable.get("POLYGON_ACCESS_KEY_ID")
