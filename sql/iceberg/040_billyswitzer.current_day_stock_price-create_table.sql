@@ -10,6 +10,7 @@ CREATE TABLE billyswitzer.current_day_stock_price (
   m_price_change_last_90_days_pct DOUBLE,
   m_price_change_last_365_days DOUBLE,
   m_price_change_last_365_days_pct DOUBLE,
+  market_cap_description VARCHAR(25),
   last_updated_datetime TIMESTAMP
   )
 WITH (

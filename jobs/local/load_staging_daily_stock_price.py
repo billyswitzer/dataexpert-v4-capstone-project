@@ -5,29 +5,14 @@
 # load_staging_daily_stock_price.py
 
 
-import sys
 import os
-# from awsglue.utils import getResolvedOptions
-# from awsglue.context import GlueContext
-# from awsglue.job import Job
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_unixtime, lit, col
 
-
-#args = getResolvedOptions(sys.argv, ["JOB_NAME", "ds", 'output_table', 'polygon_access_key_id', 'polygon_api_key'])
-# run_date = args['ds']
-# output_table = args['output_table']
-# polygon_access_key_id = args['polygon_access_key_id']
-# polygon_api_key = args['polygon_api_key']
 run_date = '2024-06-24'
 output_table = 'billyswitzer.staging_daily_stock_price'
 polygon_api_key = os.environ["POLYGON_API_KEY"]
 polygon_access_key_id = os.environ["POLYGON_ACCESS_KEY_ID"]
-
-# # Create a SparkSession with S3 endpoint configuration
-# spark = SparkSession.builder \
-#     .appName("ReadFromS3") \
-#     .getOrCreate()
 
 # Initialize SparkConf and SparkContext - run locally
 spark = SparkSession.builder \
@@ -46,10 +31,6 @@ spark = SparkSession.builder \
     .config("spark.sql.catalog.eczachly-academy-warehouse.warehouse",
             os.environ['DATA_ENGINEER_IO_WAREHOUSE']) \
     .getOrCreate()
-
-# glueContext = GlueContext(spark.sparkContext)
-# spark = glueContext.spark_session
-
 
 # Define the S3 bucket and access configuration
 s3_bucket = "s3a://flatfiles"
@@ -81,11 +62,7 @@ month = str(run_date).split('-')[1]
 file_path = f"{s3_bucket}/us_stocks_sip/day_aggs_v1/{year}/{month}/{run_date}.csv.gz"
 df = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load(file_path)
 
-# Write the DataFrame to the Iceberg table
 df.withColumn('snapshot_date', from_unixtime(col("window_start")/lit(1000*1000*1000)).cast('date')) \
 	.sortWithinPartitions("ticker").writeTo(output_table) \
 	.tableProperty("write.spark.fanout.enabled", "true") \
 	.overwritePartitions()
-
-# job = Job(glueContext)
-# job.init(args["JOB_NAME"], args)
