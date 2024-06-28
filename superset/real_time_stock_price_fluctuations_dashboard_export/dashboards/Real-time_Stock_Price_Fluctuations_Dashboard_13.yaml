@@ -218,4 +218,29 @@ metadata:
   timed_refresh_immune_slices: []
   cross_filters_enabled: true
   default_filters: '{}'
+  native_filter_configuration:
+  - id: NATIVE_FILTER-wkM6IHZ1y
+    controlValues:
+      enableEmptyFilter: false
+      defaultToFirstItem: false
+      multiSelect: true
+      searchAllOptions: false
+      inverseSelection: false
+    name: Market Cap
+    filterType: filter_select
+    targets:
+    - datasetId: 28
+      column:
+        name: market_cap_description
+    defaultDataMask:
+      extraFormData: {}
+      filterState: {}
+      ownState: {}
+    cascadeParentIds: []
+    scope:
+      rootPath:
+      - ROOT_ID
+      excluded: []
+    type: NATIVE_FILTER
+    description: ''
 version: 1.0.0

@@ -34,6 +34,7 @@ apca_api_secret_key = Variable.get("APCA_API_SECRET_KEY")
 def update_current_day_stock_price_microbatch_dag():
     source_table = "billyswitzer.dim_daily_stock_price"
     target_table = "billyswitzer.current_day_stock_price"
+    ticker_details_table = "billyswitzer.dim_ticker_details"
         
     initial_load_to_current_day_stock_price = "jobs/batch/load_dim_daily_stock_price_to_current_day_stock_price.py"
     update_current_day_stock_price_microbatch_script = "jobs/batch/update_current_day_stock_price_microbatch.py"
@@ -54,7 +55,8 @@ def update_current_day_stock_price_microbatch_dag():
             "arguments": {
                 "--ds": "{{ ds }}",
                 "--source_table": source_table,
-                "--target_table": target_table
+                "--target_table": target_table,
+                "--ticker_details_table": ticker_details_table
             },
         },
     )

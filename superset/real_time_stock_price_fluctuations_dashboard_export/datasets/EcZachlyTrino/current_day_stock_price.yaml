@@ -118,6 +118,19 @@ columns:
   python_date_format: null
   extra:
     warning_markdown: null
+- column_name: ticker
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: VARCHAR
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra:
+    warning_markdown: null
 - column_name: m_price_change_last_day_pct
   verbose_name: null
   is_dttm: false
@@ -170,7 +183,7 @@ columns:
   python_date_format: null
   extra:
     warning_markdown: null
-- column_name: ticker
+- column_name: market_cap_description
   verbose_name: null
   is_dttm: false
   is_active: true
