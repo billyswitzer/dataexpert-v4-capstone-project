@@ -1,17 +1,20 @@
 # Real-time Stock Price Fluctuations Project
 
+## Installation Instructions
+*****Add these*****
+
 ## Background and Motivation
 I became interested in investing during my time as a Data Analyst with the North Carolina Department of the State Treasurer, working primarily with the Retirement Systems Division, which manages pension benefits for state and local government workers in the State of North Carolina. This interest was augmented after a conversation with my parents in which they revealed that their longtime financial advisor had often been more interested in his own commission than in their financial goals. I became determined at that point to learn to manage my own investments, which has proved to be an exciting and worthwhile hobby. While most of my investing has been and will likely continue to be in indexes as first proposed by [Jack Bogle](https://www.investopedia.com/terms/j/john_bogle.asp), my desire to explore real-time, near-real-time, and short-term investment opportunitites provided a natural choice for the capstone project for the DataExpert.io V4 bootcamp.
 
 ## Scope
-There are practically as many opportunities to leverage real-time data in investing as there are investment instruments themselves. For this project I considered exploring equities (stocks), credit instruments (bonds, both commercial and government), Real Estate Investment Trusts, and currency exchanges (both cryptocurrencies and currencies issued by governments). Short-term changes in price and volume in any of these categories can suggest either buying opportunities, or the need for risk management to minimize losses. As most of my experience as an investor is in traditional equities, I decided to focus there for this initial implementation, and decided to further narrow scope to comparisons of real-time stock prices against historical ones. This project is a work in progress, and the current implementation should be considered a proof-of-concept.
+There are practically as many opportunities to leverage real-time data in investing as there are investment instruments themselves. For this project I considered exploring equities (stocks), credit instruments (bonds, both commercial and government), Real Estate Investment Trusts, currency exchanges (both cryptocurrencies and currencies issued by governments), and deriviatives of the previous categories. Short-term changes in price and volume in any of these categories can suggest either buying opportunities, or the need for risk management to minimize losses. As most of my experience as an investor is in traditional equities, I decided to focus there for this initial implementation, and decided to further narrow scope to comparisons of real-time stock prices against historical ones. This project is a work in progress, and the current implementation should be considered a proof-of-concept.
 
 ## Target Audience
 The target audience for this initial proof-of-concept are day traders or anyone who is looking for real-time suggestions of which stocks are above or below their historical price averages in order to identify potential buying or selling situations.
 
 ## Desired Insights
 The initial implementation of the project seeks to answer the following questions:
-1. What are the Top 25 stocks above/below their historical price?
+1. What are the Top 50 stocks above/below their historical price?
 	- Compared with most recent
 		- Daily Close Price
 		- 90 Day Average
@@ -27,20 +30,30 @@ The output of the project is an Apache Superset dashboard showing the percent di
 ## Data sources
 I considered the six data sources in the table for the project, and narrowed the list to Alpaca Markets and Polygon.io based on the support for streaming, the high API limit, and relatively low cost.
 
-| Name           |  Monthly Price for Real-Time or Near-Real-Time    | API Limit                                         | Notes                                                                                                                                            | Real-Time Method                |
+| Name           |  Monthly Price for Real-Time or Near-Real-Time    | API Limit | Notes | Real-Time Method                |
 |:---------------|:--------------------------------------------------|:--------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------|
-| [Alpaca Markets](https://alpaca.markets/) | $100.00                                           | Unlimited websockets; 10k API requests per minute |                                                                                                                                               | Websockets                      |
-| [Alpha Vantage](https://www.alphavantage.co/)  | $250.00                                           | 1200 requests per minute                          |                                                                                                                                               | Multiple API calls (microbatch) |
-| [Finnhub.io](https://finnhub.io/)     | $130.00                                           | Unlimited websockets; 300 API requests per minute |                                                                                                                                               |                              |
-| [IEX Cloud](https://iexcloud.io/)      | $500.00                                           |                                                |                                                                                                                                               | Server Side Events              |
-| [Polygon.io](https://polygon.io/)     | $200.00                                           | Unlimited                                         | $30 for 15-minute-delayed data and basically all other functionality. Data accounts for splits (unlike Alpaca) and has more metadata than Alpaca | Websockets                      |
-| [Yahoo Finance](https://finance.yahoo.com/)  | [N/A](https://algotrading101.com/learn/yahoo-finance-api-guide/)                                               |                                                | Streaming is not supported                                                                                                                       |                              |
+| [Alpaca Markets](https://alpaca.markets/) | $100.00| Unlimited websockets; 10k API requests per minute | | Websockets                      |
+| [Alpha Vantage](https://www.alphavantage.co/)  | $250.00 | 1200 requests per minute | | Multiple API calls (microbatch) |
+| [Finnhub.io](https://finnhub.io/)     | $130.00 | Unlimited websockets; 300 API requests per minute | | Websockets |
+| [IEX Cloud](https://iexcloud.io/)      | $500.00 | | | Server Side Events              |
+| [Polygon.io](https://polygon.io/)     | $200.00 | Unlimited | $30 for 15-minute-delayed data and basically all other functionality. Data accounts for splits (unlike Alpaca) and has more metadata than Alpaca | Websockets                      |
+| [Yahoo Finance](https://finance.yahoo.com/)  | [N/A](https://algotrading101.com/learn/yahoo-finance-api-guide/) | | Streaming is not supported ||
 
-I initially settled on Alpaca Markets as it is half the cost of Polygon.io for real-time data. After building the initial version of the project using Alpaca APIs for both historical and current data (in a microbatch), I discovered that the Alpaca data does not account for stock splits, nor does it provide an API listing information on stock splits. This is illustrated by an early version of the dashboard reporting NVIDIA (NVDA) being down 85% compared to the previous quarter, which is obviously incorrect:
+I initially settled on Alpaca Markets as it is half the cost of Polygon.io for real-time data. After building the initial version of the project using Alpaca APIs for both historical and current data (in a microbatch), I discovered that the Alpaca data does not account for stock splits, nor does it provide an API to obtain this information. This is illustrated by an early version of the dashboard reporting NVIDIA (NVDA) being down 85% compared to the previous quarter, which is obviously incorrect:
 
 ![NVDA](readme_links/nvda_error_20240621.png)
 
 Alpaca also fails to include the market cap dimension I had planned to use as a filter. After further research on Polygon.io, I discovered that they offer a $30/month plan which includes nearly all functionality, but provides real-time data with a 15-minute delay. Polygon.io does provide an API on stock splits, accounts for stock splits in the historical API, and also provides the ability to directly download historical CSV files from S3. Using Spark to connect to the files on Polygon.io's S3 server reduced the time to stage the previous day's data from 20 minutes to 2 when compared with using the historical API. Polygon.io also provides metadata on each company (Ticker Details), from which I pulled and categorized each asset's market cap.
+
+Unfortunately I did discover during development that the stock split data from Polygon.io can arrive late. This occurred with STAF on 6/26/2024, as shown in the result set below:
+
+![STAF](readme_links/staf_prices_missed_split.png)
+
+I considered adding a filter to limit price differences displayed on the dashboard, but that filter increases the risk of hiding an actual result, such as this one from MLGO from 6/24/2024, where the difference between open and close price was nearly 300%.
+
+![MLGO](readme_links/mlgo_legitimate_wide_spread.png)
+
+A future enhancement for this project will handle late-arriving stock split data.
 
 ## Tech Stack
 The tech stack for the project is as follows:
@@ -51,13 +64,15 @@ The tech stack for the project is as follows:
 - [Superset](https://superset.apache.org/)
 - [AWS Glue](https://aws.amazon.com/glue/)
 
-As part of the DataExpert.io course, students are provided access to an Iceberg data lake run by Starburst, as well as to an AWS Glue account for running Spark jobs, making these natural choices for the initial version of the project. Iceberg is a natural choice for storing batch data as most tables are stored in Parquet format, utilizing run-length-encoding compression. I considered having the dashboard source hosted in Postgres, but as a proof-of-concept Iceberg is fully functional. Once the project incorporates actual streaming data I will likely move the dashboard source to Apache Druid to take advantage of its lower latency.
+As part of the DataExpert.io course, students are provided access to an Iceberg data lake run by Starburst, as well as to an AWS Glue account for running Spark jobs, making these natural choices for the initial version of the project. Iceberg is a natural choice for storing batch data as tables are stored in Parquet format by default, utilizing run-length-encoding compression. I considered having the dashboard source hosted in Postgres, but as a proof-of-concept Iceberg is fully functional. Once the project incorporates actual streaming data I will likely move the dashboard source to Apache Druid to take advantage of its lower latency.
 
-Airflow and PySpark are industry standards for pipeline orchestration and batch processing, respectively. After encountering difficulties linking a websocket to Spark Streaming and Flink, I elected to move to a microbatch process to pull in data during the day. This process runs on a loop, updating each stock roughly every 4 minutes. As Spark does not provide much of an advantage with repeated API calls, and as it has a significant overhead in terms of memory and compute, I elected to use the Requests library in Python to handle the microbatch process. Spark does handle the final table update, but the API responses are stored in a list before briefly being converted to a pandas dataframe and finally to a PySpark dataframe for the final update.
+Airflow and PySpark are industry standards for pipeline orchestration and batch processing, respectively. After encountering difficulties linking a websocket both to Spark Streaming and Flink, I elected to move to a microbatch process to pull in data during the day. This process runs on a loop, updating each stock roughly every 4 minutes. As Spark does not provide much of an advantage with repeated API calls, and as it has a significant overhead in terms of memory and compute, I elected to use the Requests library in Python to handle the microbatch process. Spark does handle the final table update, but the API responses are stored in a list before briefly being converted to a pandas dataframe and finally to a PySpark dataframe for the final update.
 
 I initially planned to use Tableau for the dashboard. Unfortunately in order to build a new Dashboard connected to a database (rather than a flat file) Tableau requires a [Creator](https://www.tableau.com/products/tableau#plans-pricing) license, which costs $900/year. For this reason I elected to use Apache Superset, which is open source.
 
 ## Metrics
+The initial metrics chosen for the project are below, although only the three percentage metrics are shown on the dashboard at this time.
+
 | Metric Name		| Metric Derivation		| Description	|
 |:-------------	|:---------	|:-----------------	|
 | m_price_change_last_day	| current_price - close_price_last_day	| Absolute price change compared with the previous day (USD)	|
@@ -70,7 +85,7 @@ I initially planned to use Tableau for the dashboard. Unfortunately in order to 
 The grain of each metric is stock_symbol. The initial Superset dashboard displays a chart showing the top 50 stocks sorted by the three percentage metrics both ascending and descending (two charts per metric). This charts will identify potential buying/selling/short opportunities for day traders in real time. A dashboard showing the changes in absolute price will be added at a later date.
 
 ## Data and Architecture
-Daily stock data is loaded from the Polygon.io Daily Aggregates Flat File into a staging table, combined with stock split data (from the Polygon.io Reference Data API), and merged into a cumulative table (daily_stock_price_cumulative) in Iceberg via a Spark job scheduled with Airflow. The daily_stock_price_cumulative table contains an array of the previous 365 days of price and volume data. This data is aggregated into a dimension table in Iceberg (dim_daily_stock_price) containing averages for comparison with real-time data. Finally, the dim_daily_stock_price is joined to the dim_ticker_details table (a one-time pull from the Polygon.io Reference Data API) to pull in the market cap dimension and load to the current_day_stock_price table, which is uploaded by the microbatch process. The architecture for the daily data flow is shown below.
+Daily stock data is loaded from the [Polygon.io Daily Aggregates Flat File](https://polygon.io/flat-files/stocks-day-aggs) into a staging table, combined with stock split data (from the [Polygon.io Reference Data API](https://polygon.io/docs/stocks/get_v3_reference_splits)), and merged into a cumulative table (daily_stock_price_cumulative) in Iceberg via a Spark job scheduled with Airflow. The daily_stock_price_cumulative table contains an array of the previous 365 days of price and volume data. This data is aggregated into a dimension table in Iceberg (dim_daily_stock_price) containing averages for comparison with real-time data. Finally, the dim_daily_stock_price is joined to the dim_ticker_details table (a one-time pull from the [Polygon.io Reference Data API](https://polygon.io/docs/stocks/get_v3_reference_tickers__ticker)) to pull in the market cap dimension and load to the current_day_stock_price table, which is updated by the microbatch process. The microbatch process pulls intraday data from the [Alpaca Markets Market Data API](https://docs.alpaca.markets/reference/stockbars-1). The architecture for the daily data flow is shown below.
 
 ![Architecture Diagram](readme_links/architecture_diagram_v2.png)
 
@@ -83,12 +98,12 @@ The daily_stock_price_cumulative was initially populated via a backfill from the
 | dim_daily_stock_price	| 12900	| 0.3	| Daily dimension table containing close price for previous day, previous quarter (average), and previous year (average). Grain is ticker. Values are for current partition.	|
 | current_day_stock_price	| 12895	| 0.5	| dim_daily_stock_price for current day plus market cap and intraday prices and metrics. Grain is ticker.	|
 
-The reduced cardinality, in particular, facilitates an efficient join between dim_daily_stock_price and dim_ticker_details. The aggregated grain along with the distributed capabilities of Spark will enable this model to handle additional markets and asset types in the future.
+The reduced cardinality, in particular, facilitates an efficient join between dim_daily_stock_price and dim_ticker_details, and the small footprint of current_day_stock_price facilitates rapid dashbaord updates. The aggregated grain along with the distributed capabilities of Spark will enable this model to handle additional markets and asset types in the future.
 
 ### Table Details
 
 #### daily_stock_split
-The daily_stock_split is a log of stock splits from the Polygon.io Reference API, and is used to convert data reported in the flat files. An example, on 6/10/2024, NVIDIA had a 10:1 stock split, with a split_from of 1 and a split_to of 10, meaning each share prior to 6/10 was worth 10 shares after 6/10. This table is joined with staging price data prior to merging into daily_stock_price_cumulative.
+The daily_stock_split is a log of stock splits from the Polygon.io Reference API, and is used to apply split logic to data reported in the flat files. An example, on 6/10/2024, NVIDIA had a 10:1 stock split, with a split_from of 1 and a split_to of 10, meaning each share prior to 6/10 was worth 10 shares after 6/10. This table is joined with staging price data prior to merging into daily_stock_price_cumulative.
 
 | Column		| Type		| Comment			|
 |:-------------	|:---------	|:-----------------	|
@@ -110,7 +125,7 @@ The daily_stock_price_cumulative table contains one row per ticker with a year's
 | Column		| Type		| Comment			|
 |:-------------	|:---------	|:-----------------	|
 | ticker	| VARCHAR	| Stock Symbol		|
-| price_array 	| ARRAY(ROW(DOUBLE, DOUBLE, DOUBLE, DOUBLE, BIGINT, DATE))	| Last 365 days of volume, open price, high price, low price, close price, transaction count, and snapshot date	|
+| price_array 	| ARRAY(ROW(DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, BIGINT, DATE))	| Last 365 days of volume, open price, high price, low price, close price, transaction count, and snapshot date	|
 | as_of_date 	| DATE		| Most recent date imported (partition key)	|
 
 ##### Data Quality Checks
@@ -141,7 +156,7 @@ The dim_daily_stock_price table contains one row per ticker with averages to be 
 - Downstream from daily_stock_price_cumulative
 
 #### dim_ticker_details
-The dim_ticker_details table is (currently) a Type 0 SCD containing metadata on each ticker. This table also comes from the Polygon.io Reference Data API, but was loaded as an initial backfill rather than as part of the daily pipeline because of long load times. Regular updates to this table will be added at some point in the future. Another future enhancement to the table will be adding catagories for the industry_description to group similar businesses together.
+The dim_ticker_details table is (currently) a Type 0 SCD containing metadata on each ticker. This table also comes from the Polygon.io Reference Data API, but was loaded as an initial backfill rather than as part of the daily pipeline because of long load times. This table provides dimensional data for filtering dashboard results, although market_cap_description is currently the only column passed to the current_day_stock_price table and dashboard. Future enhancements will include regular updates to the table and combining catagories for the industry_description to group similar businesses together.
 
 | Column		| Type		| Comment			|
 |:-------------	|:---------	|:-----------------	|
@@ -184,15 +199,18 @@ The current_day_stock_price table is the source of the Superset Dashboard. It is
 
 ### DAGs
 #### Daily DAGs
-Two DAGs update the system with daily and intraday stock data. The load_daily_stock_price_dag loads the previous day's volume and price data, combines it with data on stock splits, and updates the daily_stock_price_cumulative table and the dim_daily_stock_price table for the previous day. The daily_stock_price_cumulative and daily_stock_split tables, follow a write-audit-publish pattern. Other steps are added to ensure pipeline idempotency. This DAG runs daily, including weekends.
+Two DAGs update the system with daily and intraday stock data. The [load_daily_stock_price_dag](dags/etl/load_daily_stock_price_dag.py) loads the previous day's volume and price data, combines it with data on stock splits, and updates the daily_stock_price_cumulative table and the dim_daily_stock_price table for the previous day. The daily_stock_price_cumulative and daily_stock_split tables, follow a write-audit-publish pattern. Other steps are added to ensure pipeline idempotency. This DAG runs daily, including weekends.
 
 ![load_daily_stock_price_dag](readme_links/load_daily_stock_price_dag_run.png)
 
-The update_current_day_stock_price_microbatch_dag runs on Monday-Friday, and initializes the current_day_stock_price table with data from dim_daily_stock_price, and runs a microbatch to pull data from the Alpaca Historical API throughout the day to update the table, thus updating the associated dashboard. Stocks update an average of once every 4 minutes. Additional logic to account for market holidays in the scheduling of this pipeline will be added at a later date.
+The [update_current_day_stock_price_microbatch_dag](dags/etl/update_current_day_stock_price_microbatch_dag.py) runs on Monday-Friday, and initializes the current_day_stock_price table with data from dim_daily_stock_price, and runs a microbatch to pull data from the Alpaca Historical API throughout the day to update the table, thus updating the associated dashboard. Stocks update an average of once every 4 minutes. Additional logic to account for market holidays in the scheduling of this pipeline will be added at a later date.
 
 ![update_current_day_stock_price_microbatch_dag](readme_links/update_current_day_stock_price_microbatch_dag_run.png)
 
 #### Backfills
-The daily_stock_price_cumulative table and dim_ticker_details tables were both backfilled with data at the start of the project. The process to load the daily_stock_price_cumulative was similar to the daily load - data from 6/1/2023 onward was pulled from Polygon.io's Daily Aggregate Files on S3, merged with stock split data from the Polygon.io Reference API (in the stock_splits_backfill table), then the last year's worth of data was pulled for the initial partition of daily_stock_price_cumulative. 
+The daily_stock_price_cumulative table and dim_ticker_details tables were both backfilled with data at the start of the project. The process to load the daily_stock_price_cumulative was similar to the daily load - data from 6/1/2023 onward was [pulled](jobs/batch/load_staging_daily_stock_price_backfill.py) from Polygon.io's Daily Aggregate Files on S3, merged with [stock split data](jobs/batch/load_stock_splits_backfill.py) from the Polygon.io Reference API (in the stock_splits_backfill table), then the last year's worth of data was [pulled](sql/iceberg/020_billyswitzer.daily_stock_price_cumulative-backfill.sql) for the initial partition of daily_stock_price_cumulative. 
 
-I had originally intended for dim_ticker_details to be part of the load_daily_stock_price_dag, but since it required looping through API calls, this step took over an hour to complete. For this reason, I elected to backfill this table once for the purposes of this proof-of-concept. Regular updates to this table will be considered in the future.
+I had originally intended for dim_ticker_details to be part of the load_daily_stock_price_dag, but since it required looping through API calls, this step took over an hour to complete. For this reason, I elected to [backfill](jobs/local/load_dim_ticker_details.py) this table once for the purposes of this proof-of-concept. Regular updates to this table will be considered in the future.
+
+### Next Steps
+The first North Star goal for this project is to move the intraday pipeline to real-time using either Spark Structured Streaming or Flink. However, in the current implementation, Spark and Iceberg are hosted on the DataExpert.io infrastructure, while Airflow and Superset are hosted locally on Docker. The first step will be to migrate the entire project to an AWS account which can host all the necessary resources for the project. Following the migration, adding a daily pipeline for late-arriving stock split data and aggregating the industry descriptions from dim_ticker_details are low effort projects with high impact. Streaming and migrating the current_day_stock_price data to Druid will likely follow. Finally, I will begin research on designing scenarios to train ML models to make predictions based on real-time data, and expand the scope of the project to asset classes other than stocks.
