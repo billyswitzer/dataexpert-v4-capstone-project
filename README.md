@@ -1,7 +1,62 @@
 # Real-time Stock Price Fluctuations Project
 
 ## Installation Instructions
-*****Add these*****
+### Prerequisites
+Before cloning the repo, you will need:
+- On your local machine:
+	- Linux, MacOS, or Windows running [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
+	- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+	- Inside WSL for Windows users; regular installation for Linux/Mac users
+		- Python 3.10
+		- Java Runtime Environment JRE (I'm running JRE 21.0.3)
+		- [Spark 3.5](https://www.apache.org/dyn/closer.lua/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz)0
+- In AWS
+	- An Iceberg data lake running Trino
+	- AWS Glue
+
+### Environment Variables
+For local variables, I recommend adding lines of the form ```export VARIABLE_NAME=variable_value``` to your ~/.bashrc file (or equivalent), then running ```source .bashrc```
+
+| Variable name	| Description	| Location(s) |
+|:------------|:-------------|:-------------|
+| APCA_API_KEY_ID | Key ID for Alpaca.Markets API | .bashrc<br>airflow_settings.yaml |
+| APCA_API_SECRET_KEY | Secret Key for Alpaca.Markets API | .bashrc<br>airflow_settings.yaml |
+| POLYGON_API_KEY | Key ID for Polygon.io API | .bashrc<br>airflow_settings.yaml<br>.env  |
+| POLYGON_ACCESS_KEY_ID | Secret Key for Polygon.io API | .bashrc<br>airflow_settings.yaml |
+| DATA_ENGINEER_IO_WAREHOUSE | Trino catalog name | .bashrc |
+| DATA_ENGINEER_IO_WAREHOUSE_CREDENTIAL | Trino credential | .bashrc |
+| JAVA_HOME | Location of javac | .bashrc |
+| AWS_SECRET_ACCESS_KEY | AWS Secret Access Key for Boto3 Client | .bashrc<br>.env |
+| AWS_ACCESS_KEY_ID | AWS Access Key ID for Boto3 Client | .bashrc<br>.env |
+| AIRFLOW__SECRETS__BACKEND | Location of Airflow Secrets | .env |
+| AIRFLOW__SECRETS__BACKEND_KWARGS | Keyword arguments for airflow secrets: connections_prefix, variables_prefix, variables_prefix | .env |
+| AWS_DEFAULT_REGION | Default AWS region | .env |
+| AIRFLOW_CONN_AWS_DEFAULT | Connection prefix (aws://) | .env |
+| AWS_S3_BUCKET_TABULAR | S3 bucket for Tabular/Iceberg/Trino installation | airflow_settings.yaml |
+| TABULAR_CREDENTIAL | Tabular Credential | airflow_settings.yaml |
+| CATALOG_NAME | Trino catalog name | airflow_settings.yaml |
+| AWS_GLUE_REGION | Region for AWS Glue | airflow_settings.yaml |
+| DATAEXPERT_AWS_ACCESS_KEY_ID | AWS Access Key ID for Boto3 Client | airflow_settings.yaml |
+| DATAEXPERT_AWS_SECRET_ACCESS_KEY | AWS Secret Access Key for Boto3 Client | airflow_settings.yaml |
+
+### Cloning and backfill
+1. Clone this repo to a folder
+2. Run the following two SQL scripts in your Trino SQL editor against the target Iceberg instance. Update schema name here and below as appropriate.
+	- [005_billyswitzer.staging_daily_stock_price_cumulative-create_table.sql](sql/iceberg/005_billyswitzer.staging_daily_stock_price_cumulative-create_table.sql)
+	- [010_billyswitzer.daily_stock_price_cumulative-create_table.sql](sql/iceberg/010_billyswitzer.daily_stock_price_cumulative-create_table.sql)
+3. Uncomment the call to [load_staging_daily_stock_price_backfill.py](jobs/batch/load_staging_daily_stock_price_backfill.py) in [glue_job_runner.py](jobs/glue_job_runner.py) and execute the following in the command line: ```python3 -m jobs.glue_job_runner```
+4. Comment out the function all above and uncomment the call to [load_stock_splits_backfill.py](jobs/batch/load_stock_splits_backfill.py) in glue_job_runner.py. Run glue_job_runner as above.
+5. Run the following SQL scripts in the Trino SQL editor against the target Iceberg database:
+	- [020_billyswitzer.daily_stock_price_cumulative-backfill.sql](sql/iceberg/020_billyswitzer.daily_stock_price_cumulative-backfill.sql)
+	- [025_billyswitzer.daily_stock_split-create_table.sql](sql/iceberg/025_billyswitzer.daily_stock_split-create_table.sql)
+	- [030_billyswitzer.dim_daily_stock_price-create_table.sql](sql/iceberg/030_billyswitzer.dim_daily_stock_price-create_table.sql)
+	- [040_billyswitzer.current_day_stock_price-create_table.sql](sql/iceberg/040_billyswitzer.current_day_stock_price-create_table.sql)
+6. Run [jobs/local/load_dim_ticker_details.py](jobs/local/load_dim_ticker_details.py) with spark-submit. This is likely to take 1-2 hours.
+7. Open a new Terminal window and navigate to the parent folder of this repo. Follow the instructions [here](https://superset.apache.org/docs/installation/docker-compose/#installing-superset-locally-using-docker-compose) to clone Apache Superset to a new folder and run with Docker Compose. Superset will continue running in this Terminal window.
+8. Import the [superset/dashboard_export.zip](superset/dashboard_export.zip) file to Superset and open the Dashboard.
+9. In the main folder for this repo, type ```astro dev start```. Once in Airflow, wait for the load_daily_stock_price_dag to finish backfilling the tables, then run update_current_day_stock_price_microbatch_dag to populate the Superset dashboard in real time.
+
+
 
 ## Background and Motivation
 I became interested in investing during my time as a Data Analyst with the North Carolina Department of the State Treasurer, working primarily with the Retirement Systems Division, which manages pension benefits for state and local government workers in the State of North Carolina. This interest was augmented after a conversation with my parents in which they revealed that their longtime financial advisor had often been more interested in his own commission than in their financial goals. I became determined at that point to learn to manage my own investments, which has proved to be an exciting and worthwhile hobby. While most of my investing has been and will likely continue to be in indexes as first proposed by [Jack Bogle](https://www.investopedia.com/terms/j/john_bogle.asp), my desire to explore real-time, near-real-time, and short-term investment opportunitites provided a natural choice for the capstone project for the DataExpert.io V4 bootcamp.
@@ -199,7 +254,7 @@ The current_day_stock_price table is the source of the Superset Dashboard. It is
 
 ### DAGs
 #### Daily DAGs
-Two DAGs update the system with daily and intraday stock data. The [load_daily_stock_price_dag](dags/etl/load_daily_stock_price_dag.py) loads the previous day's volume and price data, combines it with data on stock splits, and updates the daily_stock_price_cumulative table and the dim_daily_stock_price table for the previous day. The daily_stock_price_cumulative and daily_stock_split tables, follow a write-audit-publish pattern. Other steps are added to ensure pipeline idempotency. This DAG runs daily, including weekends.
+Two DAGs update the system with daily and intraday stock data. The [load_daily_stock_price_dag](dags/etl/load_daily_stock_price_dag.py) loads the previous day's volume and price data, combines it with data on stock splits, and updates the daily_stock_price_cumulative table and the dim_daily_stock_price table for the previous day. The daily_stock_price_cumulative and daily_stock_split tables follow a write-audit-publish pattern. Other steps are added to ensure pipeline idempotency. This DAG runs daily, including weekends.
 
 ![load_daily_stock_price_dag](readme_links/load_daily_stock_price_dag_run.png)
 
